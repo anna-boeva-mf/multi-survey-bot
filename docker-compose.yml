@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:13.3
+    container_name: multi_survey_bot-13.3
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpwd
+      POSTGRES_DB: multi_survey_bot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

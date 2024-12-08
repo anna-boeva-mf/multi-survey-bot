@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="0" author="SyrveyBotApplication">
+        <sql>
+            CREATE SCHEMA IF NOT EXISTS survey;
+        </sql>
+    </changeSet>
+
+    <changeSet id="1" author="SyrveyBotApplication">
+        <sql>
+            CREATE TABLE IF NOT EXISTS survey.survey_types
+            (
+            survey_type_id bigserial NOT NULL,
+            survey_type_name text NOT NULL,
+            multiple_choice_flg boolean,
+            quiz_flg boolean,
+            insert_dt timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT survey_types_pkey PRIMARY KEY (survey_type_id),
+            CONSTRAINT survey_type_name_key UNIQUE (survey_type_name)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="2" author="SyrveyBotApplication">
+        <sql>
+            CREATE TABLE IF NOT EXISTS survey.survey_groups
+            (
+            survey_group_id bigserial NOT NULL,
+            survey_group_name text NOT NULL,
+            survey_type_id bigint,
+            insert_dt timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT survey_groups_pkey PRIMARY KEY (survey_group_id),
+            CONSTRAINT survey_group_name_key UNIQUE (survey_group_name),
+            CONSTRAINT fk_survey_groups_on_survey_types FOREIGN KEY (survey_type_id)
+            REFERENCES survey.survey_types (survey_type_id)
+            );
+            CREATE INDEX IF NOT EXISTS survey_group_name_ind
+            ON survey.survey_groups USING btree
+            (survey_group_name ASC NULLS LAST);
+        </sql>
+    </changeSet>
+
+    <changeSet id="3" author="SyrveyBotApplication">
+        <sql>
+            CREATE TABLE IF NOT EXISTS survey.surveys
+            (
+            survey_id bigserial NOT NULL,
+            survey_question text NOT NULL,
+            survey_type_id bigint,
+            insert_dt timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP,
+            survey_group_id bigint,
+            CONSTRAINT surveys_pkey PRIMARY KEY (survey_id),
+            CONSTRAINT fk_surveys_on_survey_groups FOREIGN KEY (survey_group_id)
+            REFERENCES survey.survey_groups (survey_group_id)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="4" author="SyrveyBotApplication">
+        <sql>
+            CREATE TABLE IF NOT EXISTS survey.answers
+            (
+            answer_id bigserial NOT NULL,
+            survey_id bigint,
+            answer text NOT NULL,
+            correct_flg boolean DEFAULT true,
+            insert_dt timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT answers_pkey PRIMARY KEY (answer_id),
+            CONSTRAINT fk_answers_on_surveys FOREIGN KEY (survey_id)
+            REFERENCES survey.surveys (survey_id)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="5" author="SyrveyBotApplication">
+        <sql>
+            CREATE TABLE IF NOT EXISTS survey.results
+            (
+            result_id bigserial NOT NULL,
+            user_id bigint NOT NULL,
+            survey_id bigint NOT NULL,
+            user_result text NOT NULL,
+            insert_dt timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT results_pkey PRIMARY KEY (result_id),
+            CONSTRAINT results_user_survey_key UNIQUE (user_id, survey_id),
+            CONSTRAINT fk_results_on_surveys FOREIGN KEY (survey_id)
+            REFERENCES survey.surveys (survey_id)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="6" author="SyrveyBotApplication">
+        <sql>
+            CREATE SCHEMA IF NOT EXISTS security;
+        </sql>
+    </changeSet>
+
+    <changeSet id="7" author="SyrveyBotApplication">
+        <sql>
+            CREATE TABLE IF NOT EXISTS security.users
+            (
+            user_id bigserial NOT NULL,
+            user_name text NOT NULL,
+            tg_flg boolean DEFAULT false,
+            tg_firstname text,
+            tg_lastname text,
+            tg_username text,
+            password text NOT NULL DEFAULT '-1'::text,
+            insert_dt timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT users_pkey PRIMARY KEY (user_id),
+            CONSTRAINT users_user_name_key UNIQUE (user_name)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="8" author="SyrveyBotApplication">
+        <sql>
+            CREATE TABLE IF NOT EXISTS security.roles
+            (
+            role_id bigserial NOT NULL,
+            role_name text NOT NULL,
+            CONSTRAINT roles_pkey PRIMARY KEY (role_id),
+            CONSTRAINT roles_name_key UNIQUE (role_name)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="9" author="SyrveyBotApplication">
+        <sql>
+            CREATE TABLE IF NOT EXISTS security.user_roles
+            (
+            user_id bigint NOT NULL,
+            role_id bigint NOT NULL,
+            CONSTRAINT fk_user_roles_users FOREIGN KEY (user_id)
+            REFERENCES security.users (user_id),
+            CONSTRAINT fk_user_roles_users1 FOREIGN KEY (role_id)
+            REFERENCES security.roles (role_id)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="10" author="SyrveyBotApplication">
+        <sql>
+            insert into survey.survey_types (survey_type_name, multiple_choice_flg, quiz_flg) values ('Обычный', false, false);
+            insert into survey.survey_types (survey_type_name, multiple_choice_flg, quiz_flg) values ('Множественный выбор', true, false);
+            insert into survey.survey_types (survey_type_name, multiple_choice_flg, quiz_flg) values ('Викторина', false, true);
+        </sql>
+    </changeSet>
+
+    <changeSet id="11" author="SyrveyBotApplication">
+        <sql>
+            insert into security.roles (role_name) values ('ADMIN');
+        </sql>
+    </changeSet>
+</databaseChangeLog>

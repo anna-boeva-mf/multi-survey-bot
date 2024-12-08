@@ -1,0 +1,32 @@
+server:
+  port: 8081
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/multi_survey_bot
+    driver-class-name: org.postgresql.Driver
+    username: pguser
+    password: pgpwd
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    change-log: classpath:db_changelog.xml
+  security:
+    jwt:
+      private-key: ***
+
+logging:
+  level:
+    root: INFO
+  file:
+    name: logs/surveybot.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+telegram-bot:
+  name: ***
+  token: ***
