@@ -66,9 +66,26 @@ class AuthControllerTest {
 
     @Test
     void testLogout_OK() throws Exception {
+        mockMvc.perform(post("/api/v1/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\": \"User8904\",\"password\": \"Mypassword\"}"))
+                .andExpect(status().isCreated())
+                .andDo(print());
+
+        MvcResult afterResult = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\": \"User8904\",\"password\": \"Mypassword\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String jsonAfterResult = new String(afterResult.getResponse().getContentAsByteArray());
+        JsonObject jsonObject = JsonParser.parseString(jsonAfterResult).getAsJsonObject();
+        String accessToken = jsonObject.get("accessToken").getAsString();
+
         mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\": \"User1\",\"password\": \"Mypassword\"}"))
+                        .content("{\"username\": \"User1\",\"password\": \"Mypassword\"}")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andDo(print());
     }

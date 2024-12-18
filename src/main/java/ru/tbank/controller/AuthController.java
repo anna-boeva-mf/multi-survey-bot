@@ -40,6 +40,7 @@ public class AuthController {
     @Operation(summary = "Логаут пользователя")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "500", description = "Application error")})
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {

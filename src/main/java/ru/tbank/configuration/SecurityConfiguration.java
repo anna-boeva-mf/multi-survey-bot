@@ -39,7 +39,7 @@ public class SecurityConfiguration {
                 .antMatchers("/api/v1/register").permitAll()
                 .antMatchers("/api/v1/auth/reset-password").hasRole("USER")
                 .antMatchers("/api/v1/auth/login").permitAll()
-                .antMatchers("/api/v1/auth/logout").permitAll()
+                .antMatchers("/api/v1/auth/logout").hasRole("USER")
                 .antMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .antMatchers("/api/v1/**").hasRole("USER")
                 .and()
